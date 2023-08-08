@@ -12,17 +12,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * Database file.
- * start mongoDb exec
- * // .\mongodb\bin\mongod.exe --dbpath=.\mongodb-data
- */
-const mongoose_1 = __importDefault(require("mongoose"));
-class Database {
-    connectDB() {
-        return __awaiter(this, void 0, void 0, function* () {
-            mongoose_1.default.connect("mongodb://127.0.0.1:27017/task-manager-api");
+exports.auth = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const user_1 = require("../models/user");
+const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const token = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
+        //@ts-ignore
+        const decoded = jsonwebtoken_1.default.verify(token, "thisismynewcourse");
+        // Find User with given id
+        const user = yield user_1.User.findOne({
+            _id: decoded._id,
+            "tokens.token": token,
         });
+        if (!user) {
+            throw new Error("No user found");
+        }
+        //@ts-ignore
+        req.token = token;
+        //@ts-ignore
+        req.user = user;
+        next();
     }
-}
-exports.default = Database;
+    catch (error) {
+        res.status(401).send({ error: "Please authenticate." });
+    }
+});
+exports.auth = auth;
