@@ -34,11 +34,38 @@ router.post("/tasks", auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 // Reading Endpoints
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20
+// GET /tasks?sortBy=createdAt:asc ||
+// GET /tasks?sortBy=createdAt:des
+// Setup pagination and filter sorting
 router.get("/tasks", auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // filter completed tasks
+    let isCompleated = null;
+    let sort = {};
+    if (req.query.completed) {
+        let isCompleated = req.query.completed === "true";
+    }
+    // Check what order we are sorting
+    if (req.query.sortBy) {
+        //@ts-ignore
+        const parts = req.query.sortBy.split(":");
+        //@ts-ignore
+        sort[parts[0]] = parts[1] == "desc" ? -1 : 1;
+    }
     try {
         const tasks = yield task_1.Task.find({
             //@ts-ignore
             owner: req.user._id,
+            completed: isCompleated,
+            // determine if options
+            options: {
+                // @ts-ignore
+                limit: parseInt(req.query.limit),
+                // @ts-ignore
+                skip: parseInt(req.query.skip),
+            },
+            sort: { createdAt: -1 },
         });
         res.send(tasks);
     }
