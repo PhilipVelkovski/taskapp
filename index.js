@@ -14,20 +14,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Express server.
+ * Application entrypoint.
  */
 const express_1 = __importDefault(require("express"));
 const mongose_1 = __importDefault(require("./src/db/mongose"));
 const user_routes_1 = __importDefault(require("./src/routers/user-routes"));
 const task_routes_1 = __importDefault(require("./src/routers/task-routes"));
-const app = (0, express_1.default)();
-const port = 3000 || process.env.PORT;
-const db = new mongose_1.default();
-// Avtomatski parse sekoj request vo json
-app.use(express_1.default.json());
-app.use(user_routes_1.default);
-app.use(task_routes_1.default);
-// Set up server and databse
-app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
-    yield db.connectDB();
-    console.log("Server Started");
-}));
+class ExpressServer {
+    constructor() {
+        this.PORT = 3000 || process.env.PORT;
+        this.db = new mongose_1.default();
+        this.app = (0, express_1.default)();
+        this.setUpExpress();
+    }
+    setUpExpress() {
+        return __awaiter(this, void 0, void 0, function* () {
+            //Parse incoming requests to JSON
+            this.app.use(express_1.default.json());
+            //Use user route handler
+            this.app.use(user_routes_1.default);
+            //Use task route handler
+            this.app.use(task_routes_1.default);
+        });
+    }
+    startUpServer() {
+        return __awaiter(this, void 0, void 0, function* () {
+            //Set up server and databse connections
+            this.app.listen(this.PORT, () => __awaiter(this, void 0, void 0, function* () {
+                yield this.db.connectDB();
+                console.log("Server Started...");
+            }));
+        });
+    }
+}
+const server = new ExpressServer();
+server.startUpServer();

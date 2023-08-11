@@ -15,23 +15,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.auth = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_1 = require("../models/user");
+//@ts-ignore
 const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const token = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
-        //@ts-ignore
-        const decoded = jsonwebtoken_1.default.verify(token, "thisismynewcourse");
+        const token = (_a = req
+            .header("Authorization")) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "");
+        const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
         // Find User with given id
         const user = yield user_1.User.findOne({
+            //@ts-ignore
             _id: decoded._id,
             "tokens.token": token,
         });
         if (!user) {
             throw new Error("No user found");
         }
-        //@ts-ignore
         req.token = token;
-        //@ts-ignore
         req.user = user;
         next();
     }

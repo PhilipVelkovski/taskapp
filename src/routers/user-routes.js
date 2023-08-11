@@ -17,7 +17,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const express_1 = __importDefault(require("express"));
 const user_1 = require("../models/user");
+const multer_1 = __importDefault(require("multer"));
 const auth_1 = require("../middleware/auth");
+const sharp_1 = __importDefault(require("sharp"));
 const router = express_1.default.Router(); // Create an instance of Express Router
 // Creatinal Endpoints
 router.post("/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -121,6 +123,71 @@ router.delete("/users/me", auth_1.auth, (req, res) => __awaiter(void 0, void 0, 
     }
     catch (error) {
         return res.status(500).send();
+    }
+}));
+const upload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    dest: "avatar",
+    limits: {
+        fileSize: 100000,
+    },
+    fileFilter(req, file, cb) {
+        // Check if file is a Pdf
+        if (!file.originalname.match(/\.(jpg|png|jpeg)$/)) {
+            return cb(new Error("Please upload an image"));
+        }
+        //@ts-ignore
+        cb(undefined, true);
+    },
+});
+// Upload an avatar
+router.post("/users/me/avatar", auth_1.auth, 
+//@ts-ignore
+upload.single("avatar"), 
+//@ts-ignore
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.file) {
+        return res.status(400).send();
+    }
+    console.log("JSON " + JSON.stringify(req.file));
+    const buffer = yield (0, sharp_1.default)(req.file.buffer)
+        .resize({
+        width: 250,
+        height: 250,
+    })
+        .png()
+        .toBuffer();
+    //@ts-ignore
+    req.user.avatar = buffer;
+    //@ts-ignore
+    yield req.user.save();
+    res.send();
+}), 
+//@ts-ignore
+(error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+});
+router.delete("users/me/avatar", auth_1.auth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //@ts-ignore
+    req.user.avatar = undefined;
+    //@ts-ignore
+    yield req.user.save();
+    res.send();
+}));
+router.get("/users/:id/avatar", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("req.params.id " + req.params.id);
+        const user = yield user_1.User.findById(req.params.id);
+        console.log("User " + JSON.stringify(user));
+        if (!user || !(user === null || user === void 0 ? void 0 : user.avatar)) {
+            throw new Error("No user founds");
+        }
+        res.set("Content-Type", "image/jpg");
+        res.send(user.avatar);
+    }
+    catch (error) {
+        //
+        res.status(404).send();
     }
 }));
 // Export Module
