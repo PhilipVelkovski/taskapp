@@ -58,6 +58,9 @@ const userSchema = new Schema(
         },
       },
     ],
+    avatar: {
+      type: Buffer,
+    },
   },
   {
     timestamps: true,
@@ -79,7 +82,8 @@ userSchema.virtual("tasks", {
  */
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, "thisismynewcourse");
+  //@ts-ignore
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
   user.tokens = user.tokens.concat({ token });
   await user.save();
   return token;
@@ -116,7 +120,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Delete user and users tasks.
+//Delete user and users tasks.
 userSchema.pre("save", async function (next) {
   // this - Document that is going to be saved.
   const user = this;
@@ -126,6 +130,5 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Export user model
+//Export user model with user schema
 export const User = mongoose.model("User", userSchema);
-// module.exports = User;

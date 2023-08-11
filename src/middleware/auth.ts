@@ -1,26 +1,36 @@
 import express from "express";
-import jwt from "jsonwebtoken";
+import { RequestHandler } from "express";
+
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import { User } from "../models/user";
-export const auth = async (
-  req: express.Request,
+import iRequest from "../../interface/request";
+//@ts-ignore
+export const auth: RequestHandler<iRequest> = async (
+  req: iRequest,
   res: express.Response,
   next: express.NextFunction
 ) => {
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-    //@ts-ignore
-    const decoded = jwt.verify(token, "thisismynewcourse");
+    const token: string | undefined = req
+      .header("Authorization")
+      ?.replace("Bearer ", "");
+
+    const decoded: JwtPayload | string = jwt.verify(
+      token as string,
+      process.env.JWT_SECRET as Secret
+    );
     // Find User with given id
     const user = await User.findOne({
+      //@ts-ignore
       _id: decoded._id,
       "tokens.token": token,
     });
     if (!user) {
       throw new Error("No user found");
     }
-    //@ts-ignore
+
     req.token = token;
-    //@ts-ignore
+
     req.user = user;
     next();
   } catch (error) {

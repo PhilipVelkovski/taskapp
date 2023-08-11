@@ -21,7 +21,8 @@ const mongoose_1 = __importDefault(require("mongoose"));
 class Database {
     connectDB() {
         return __awaiter(this, void 0, void 0, function* () {
-            mongoose_1.default.connect("mongodb://127.0.0.1:27017/task-manager-api");
+            //@ts-ignore
+            mongoose_1.default.connect(process.env.MONGODB_URL);
         });
     }
 }
