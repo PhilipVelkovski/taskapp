@@ -1,11 +1,11 @@
 {
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.2",
+    "@types/bcryptjs": "2.4.2",
     "@types/express": "4.17.17",
-    "@types/jsonwebtoken": "^9.0.2",
-    "@types/mongodb": "^4.0.7",
-    "@types/multer": "^1.4.7",
-    "@types/validator": "^13.7.17",
+    "@types/jsonwebtoken": "9.0.2",
+    "@types/mongodb": "4.0.7",
+    "@types/multer": "1.4.7",
+    "@types/validator": "13.7.17",
     "env-cmd": "8.0.2",
     "typescript": "5.0.4"
   },
@@ -16,6 +16,7 @@
   "scripts": {
     "start": "node index.js",
     "build": "tsc --watch",
+    "tsc": "tsc",
     "dev": "env-cmd ./config/dev.env nodemon index.js"
   },
   "author": "Filip Velkovski",
